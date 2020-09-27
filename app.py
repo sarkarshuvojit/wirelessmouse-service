@@ -4,7 +4,7 @@ from flask import request
 import pyautogui
 
 app = Flask(__name__)
-print(f"Server Started at {get_ip_address('wlp6s0')}:0.0.0.0")
+print(f"Server Started at http://{get_ip_address('wlp6s0')}:8000")
 
 @app.route('/')
 def hello_world():
@@ -12,11 +12,15 @@ def hello_world():
 
 @app.route('/move')
 def move_cursor():
-    x_percent = float(request.args.get('x_percent'))
-    y_percent = float(request.args.get('y_percent'))
+    # Reversing the value as android treats coodinates differently
+    x_percent = -1 * float(request.args.get('x_percent'))
+    y_percent = -1 * float(request.args.get('y_percent'))
     screenWidth, screenHeight = pyautogui.size()
     move_x = (x_percent/100) * screenWidth
     move_y = (y_percent/100) * screenHeight
-    pyautogui.move(move_x, move_y, duration=1, tween=pyautogui.easeInOutQuad)
+    try:
+        pyautogui.move(move_x, move_y, duration=1, tween=pyautogui.easeInOutQuad)
+    except pyautogui.FailSafeException as e:
+        print ('Screen out of bounds')
     return {}
 
